@@ -14,15 +14,18 @@ public:
 	virtual void Initialize(CoreApplicationView^ applicationView) {
 		// initialize the support to show toast messages.
 		mToastNotifier = ToastNotificationManager::CreateToastNotifier();
+		WeakReference wr(this);
 
 		// add a listener to track whenever a gamepad gets added.
-		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>([=](Object^, Gamepad^ gamepad) {
-			int foobar = 0;
+		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>([wr](Object^, Gamepad^ gamepad) {
+			auto app = wr.Resolve<App>();
+			app->ShowToast("Gamepad Added", "...");
 		});
 
 		// add a listener to track whenever a gamepad gets removed.
 		Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>([=](Object^, Gamepad^ gamepad) {
-
+			auto app = wr.Resolve<App>();
+			app->ShowToast("Gamepad Removed", "...");
 		});
 	}
 		
@@ -37,8 +40,6 @@ public:
 	virtual void Run() {
 		auto window = CoreWindow::GetForCurrentThread();
 		window->Activate();
-
-		ShowToast("topic!", "description!");
 
 		auto dispathcher = window->Dispatcher;
 		dispathcher->ProcessEvents(CoreProcessEventsOption::ProcessUntilQuit);
