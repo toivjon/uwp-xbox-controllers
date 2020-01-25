@@ -25,11 +25,20 @@ public:
 		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>([wr](Object^, Gamepad^ gamepad) {
 			auto app = wr.Resolve<App>();
 
+			// let's also the cases where the controller user changes user profile.
+			gamepad->UserChanged += ref new TypedEventHandler<IGameController^, UserChangedEventArgs^>([wr](IGameController^, UserChangedEventArgs^ args) {
+				auto app = wr.Resolve<App>();
+				auto op = args->User->GetPropertyAsync(KnownUserProperties::AccountName);
+				create_task(op).then([app](Object^ object) {
+					app->ShowToast("User Changed", (String^)object);
+				});
+			});
+
 			auto op = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
 			create_task(op).then([app](Object^ object) {
 				app->ShowToast("Gamepad Added", (String^)object);
 			});
-			
+
 		});
 
 		// add a listener to track whenever a gamepad gets removed.
