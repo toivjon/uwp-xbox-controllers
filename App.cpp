@@ -1,3 +1,5 @@
+#include <ppltasks.h>
+
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
@@ -7,6 +9,9 @@ using namespace Platform;
 
 using namespace Windows::Data::Xml::Dom;
 using namespace Windows::UI::Notifications;
+using namespace Windows::System;
+
+using namespace concurrency;
 
 ref class App sealed : public IFrameworkView, IFrameworkViewSource
 {
@@ -19,13 +24,21 @@ public:
 		// add a listener to track whenever a gamepad gets added.
 		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>([wr](Object^, Gamepad^ gamepad) {
 			auto app = wr.Resolve<App>();
-			app->ShowToast("Gamepad Added", "...");
+
+			auto op = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
+			create_task(op).then([app](Object^ object) {
+				app->ShowToast("Gamepad Added", (String^)object);
+			});
+			
 		});
 
 		// add a listener to track whenever a gamepad gets removed.
 		Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>([=](Object^, Gamepad^ gamepad) {
 			auto app = wr.Resolve<App>();
-			app->ShowToast("Gamepad Removed", "...");
+			auto op = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
+			create_task(op).then([app](Object^ object) {
+				app->ShowToast("Gamepad Removed", (String^)object);
+			});
 		});
 	}
 		
