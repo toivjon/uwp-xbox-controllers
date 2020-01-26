@@ -99,7 +99,7 @@ public:
 			auto controller = ref new Controller(gamepad);
 			mControllers->Append(controller);
 			auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
-			ShowToast("Gamepad added", (String^)create_task(action).get());
+			Debug(L"Gamepad added: %s\r\n", (String^)create_task(action).get());
 		}
 	}
 
@@ -109,7 +109,7 @@ public:
 			if (gamepad == mControllers->GetAt(i)->GetGamepad()) {
 				mControllers->RemoveAt(i);
 				auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
-				ShowToast("Gamepad removed", (String^)create_task(action).get());
+				Debug(L"Gamepad removed: %s\r\n", (String^)create_task(action).get());
 				break;
 			}
 		}
@@ -117,7 +117,7 @@ public:
 
 	void OnUserChanged(IGameController^ c, UserChangedEventArgs^ args) {
 		auto action = args->User->GetPropertyAsync(KnownUserProperties::AccountName);
-		ShowToast("User Changed", (String^)create_task(action).get());
+		Debug(L"User Changed: %s\r\n", (String^)create_task(action).get());
 	}
 
 	void OnWindowClosed(CoreWindow^ window, CoreWindowEventArgs^ args) {
@@ -125,10 +125,6 @@ public:
 	}
 
 	virtual void Initialize(CoreApplicationView^ applicationView) {
-		// initialize the support to show toast messages.
-		mToastNotifier = ToastNotificationManager::CreateToastNotifier();
-
-		// initialize the support to handle controllers.
 		mControllers = ref new Vector<Controller^>();
 		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>(this, &App::OnGamepadAdded);
 		Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>(this, &App::OnGamepadRemoved);
@@ -214,20 +210,7 @@ public:
 	virtual IFrameworkView^ CreateView() {
 		return ref new App();
 	}
-
-	void ShowToast(String^ topic, String^ content) {
-		// create toast contents in XML.
-		auto xml = ToastNotificationManager::GetTemplateContent(ToastTemplateType::ToastText02);
-		auto textNodes = xml->GetElementsByTagName("text");
-		textNodes->GetAt(0)->AppendChild(xml->CreateTextNode(topic));
-		textNodes->GetAt(1)->AppendChild(xml->CreateTextNode(content));
-
-		// create a toast and show it!
-		auto toast = ref new ToastNotification(xml);
-		mToastNotifier->Show(toast);
-	}
 private:
-	ToastNotifier^		 mToastNotifier;
 	bool				 mWindowClosed;
 	critical_section	 mControllersLock;
 	Vector<Controller^>^ mControllers;
