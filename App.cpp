@@ -4,15 +4,14 @@
 #include <concrt.h>
 #include <string>
 
+using namespace concurrency;
+using namespace Platform;
+using namespace Platform::Collections;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
 using namespace Windows::System;
 using namespace Windows::UI::Core;
-using namespace Platform;
-using namespace Platform::Collections;
-
-using namespace concurrency;
 
 // The minimum value for vibration motor power.
 constexpr auto MIN_MOTOR_VALUE = 0.0;
