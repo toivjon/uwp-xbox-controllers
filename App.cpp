@@ -71,6 +71,31 @@ public:
 		auto window = CoreWindow::GetForCurrentThread();
 		window->Activate();
 		while (!mWindowClosed) {
+			for (auto gamepad: mGamepads) {
+				auto reading = gamepad->GetCurrentReading();
+
+				// read thumbstick values which vary between [-1.0, 1.0].
+				// note that center position (0.0) may require small "deadzone" to be correctly detected.
+				// see https://docs.microsoft.com/en-us/windows/uwp/gaming/gamepad-and-vibration
+				auto leftStickX = reading.LeftThumbstickX;
+				auto leftStickY = reading.LeftThumbstickY;
+				auto rightStickX = reading.RightThumbstickX;
+				auto rightStickY = reading.RightThumbstickY;
+
+				// read trigger values which vary between [0.0, 1.0].
+				auto leftTrigger = reading.LeftTrigger;
+				auto rightTrigger = reading.RightTrigger;
+
+				// controller button states are stored as a bitset so we use bit operations.
+				if (GamepadButtons::A == (reading.Buttons & GamepadButtons::A)) {
+					if (GamepadButtons::None == (reading.Buttons & GamepadButtons::X)) {
+						ShowToast("Button Pressed", "A");
+					} else {
+						ShowToast("Buttons Pressed", "A + X");
+					}
+
+				}
+			}
 			window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		}
 	}
