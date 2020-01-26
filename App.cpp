@@ -7,13 +7,10 @@
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
+using namespace Windows::System;
 using namespace Windows::UI::Core;
 using namespace Platform;
 using namespace Platform::Collections;
-
-using namespace Windows::Data::Xml::Dom;
-using namespace Windows::UI::Notifications;
-using namespace Windows::System;
 
 using namespace concurrency;
 
