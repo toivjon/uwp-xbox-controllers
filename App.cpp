@@ -1,11 +1,14 @@
+#include <algorithm>
 #include <ppltasks.h>
+#include <collection.h>
+#include <concrt.h>
 
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
-using namespace Collections;
 using namespace Platform;
+using namespace Platform::Collections;
 
 using namespace Windows::Data::Xml::Dom;
 using namespace Windows::UI::Notifications;
@@ -16,39 +19,40 @@ using namespace concurrency;
 ref class App sealed : public IFrameworkView, IFrameworkViewSource
 {
 public:
+	void OnGamepadAdded(Object^ o, Gamepad^ gamepad) {
+		critical_section::scoped_lock lock{ mGamepadsLock };
+		if (std::find(begin(mGamepads), end(mGamepads), gamepad) == end(mGamepads)) {
+			gamepad->UserChanged += ref new TypedEventHandler<IGameController^, UserChangedEventArgs^>(this, &App::OnUserChanged);
+			mGamepads->Append(gamepad);
+			auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
+			ShowToast("Gamepad added", (String^)create_task(action).get());
+		}
+	}
+
+	void OnGamepadRemoved(Object^ o, Gamepad^ gamepad) {
+		critical_section::scoped_lock lock{ mGamepadsLock};
+		auto index = 0u;
+		if (mGamepads->IndexOf(gamepad, &index)) {
+			mGamepads->RemoveAt(index);
+			auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
+			ShowToast("Gamepad removed", (String^)create_task(action).get());
+		}
+	}
+
+	void OnUserChanged(IGameController^ c, UserChangedEventArgs^ args) {
+		auto action = args->User->GetPropertyAsync(KnownUserProperties::AccountName);
+		ShowToast("User Changed", (String^)create_task(action).get());
+	}
+
 	virtual void Initialize(CoreApplicationView^ applicationView) {
-		// initialize the support to show toast messages.
-		mToastNotifier = ToastNotificationManager::CreateToastNotifier();
 		WeakReference wr(this);
 
-		// add a listener to track whenever a gamepad gets added.
-		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>([wr](Object^, Gamepad^ gamepad) {
-			auto app = wr.Resolve<App>();
+		// initialize the support to show toast messages.
+		mToastNotifier = ToastNotificationManager::CreateToastNotifier();
+		mGamepads = ref new Vector<Gamepad^>();
 
-			// let's also the cases where the controller user changes user profile.
-			gamepad->UserChanged += ref new TypedEventHandler<IGameController^, UserChangedEventArgs^>([wr](IGameController^, UserChangedEventArgs^ args) {
-				auto app = wr.Resolve<App>();
-				auto op = args->User->GetPropertyAsync(KnownUserProperties::AccountName);
-				create_task(op).then([app](Object^ object) {
-					app->ShowToast("User Changed", (String^)object);
-				});
-			});
-
-			auto op = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
-			create_task(op).then([app](Object^ object) {
-				app->ShowToast("Gamepad Added", (String^)object);
-			});
-
-		});
-
-		// add a listener to track whenever a gamepad gets removed.
-		Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>([=](Object^, Gamepad^ gamepad) {
-			auto app = wr.Resolve<App>();
-			auto op = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
-			create_task(op).then([app](Object^ object) {
-				app->ShowToast("Gamepad Removed", (String^)object);
-			});
-		});
+		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>(this, &App::OnGamepadAdded);
+		Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>(this, &App::OnGamepadRemoved);
 	}
 		
 	virtual void SetWindow(CoreWindow^ window) {
@@ -87,7 +91,9 @@ public:
 		mToastNotifier->Show(toast);
 	}
 private:
-	ToastNotifier^ mToastNotifier;
+	ToastNotifier^	  mToastNotifier;
+	critical_section  mGamepadsLock;
+	Vector<Gamepad^>^ mGamepads;
 };
 
 [MTAThread]
