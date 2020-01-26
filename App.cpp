@@ -44,6 +44,10 @@ public:
 		ShowToast("User Changed", (String^)create_task(action).get());
 	}
 
+	void OnWindowClosed(CoreWindow^ window, CoreWindowEventArgs^ args) {
+		mWindowClosed = true;
+	}
+
 	virtual void Initialize(CoreApplicationView^ applicationView) {
 		WeakReference wr(this);
 
@@ -56,7 +60,7 @@ public:
 	}
 		
 	virtual void SetWindow(CoreWindow^ window) {
-
+		window->Closed += ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
 	}
 
 	virtual void Load(String^ entryPoint) {
@@ -66,9 +70,9 @@ public:
 	virtual void Run() {
 		auto window = CoreWindow::GetForCurrentThread();
 		window->Activate();
-
-		auto dispathcher = window->Dispatcher;
-		dispathcher->ProcessEvents(CoreProcessEventsOption::ProcessUntilQuit);
+		while (!mWindowClosed) {
+			window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+		}
 	}
 
 	virtual void Uninitialize() {
@@ -94,6 +98,7 @@ private:
 	ToastNotifier^	  mToastNotifier;
 	critical_section  mGamepadsLock;
 	Vector<Gamepad^>^ mGamepads;
+	bool			  mWindowClosed;
 };
 
 [MTAThread]
