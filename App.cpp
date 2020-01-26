@@ -17,26 +17,103 @@ using namespace Windows::System;
 
 using namespace concurrency;
 
+// a utility to output debug stuff into Visual Studio console.
+inline void Debug(const wchar_t* fmt, ...) {
+	wchar_t buffer[256];
+	va_list vargs;
+	__crt_va_start(vargs, fmt);
+	swprintf(buffer, 256, fmt, vargs);
+	__crt_va_end(vargs);
+	OutputDebugString(buffer);
+}
+
+// note that center position thumbstick (0.0) may require small "deadzone" to be correctly detected.
+// see https://docs.microsoft.com/en-us/windows/uwp/gaming/gamepad-and-vibration
+// Note that XBox One Controller has four vibration motors.
+//   1. Left Motor (strong vibration at lower frequency).
+//   2. Right Motor (gentler vibration at higher frequency).
+//   3. Left Impulse Trigger
+//   4. Right Impultse Trigger
+ref struct Controller sealed
+{
+public:
+	Controller(Gamepad^ gamepad) : mGamepad(gamepad) {
+		mOldReading = gamepad->GetCurrentReading();
+		mNewReading = mOldReading;
+	}
+
+	// Store previous readings and read new state into memory.
+	void Tick() {
+		mOldReading = mNewReading;
+		mNewReading = mGamepad->GetCurrentReading();
+	}
+
+	// Check whether the target button(s) were just pressed during the tick.
+	bool ButtonPressed(GamepadButtons buttons) {
+		auto newState = (buttons == (mNewReading.Buttons & buttons));
+		auto oldState = (buttons == (mOldReading.Buttons & buttons));
+		return newState && !oldState;
+	}
+
+	// Check whether the target button(s) were just released during the tick.
+	bool ButtonReleased(GamepadButtons buttons) {
+		auto newState = (GamepadButtons::None == (mNewReading.Buttons & buttons));
+		auto oldState = (GamepadButtons::None == (mOldReading.Buttons & buttons));
+		return newState && !oldState;
+	}
+
+	// Get a reference on the wrapped gamepad instance.
+	Gamepad^ GetGamepad() { return mGamepad; }
+
+	// Get the current state of the controller vibration motors.
+	GamepadVibration GetVibration() { return mGamepad->Vibration; }
+	// Set the new state for the controller vibration motors.
+	void SetVibration(GamepadVibration vibration) { mGamepad->Vibration = vibration; }
+
+	// The position of the left thumbstick in X-axis. Value is between range -1.0 and 1.0.
+	double GetLeftThumbstickX() { return mNewReading.LeftThumbstickX; }
+	// The position of the left thumbstick in Y-axis. Value is between range -1.0 and 1.0.
+	double GetLeftThumbstickY() { return mNewReading.LeftThumbstickY; }
+	// The position of the right thumbstick in X-axis. Value is between range -1.0 and 1.0.
+	double GetRightThumbstickX() { return mNewReading.RightThumbstickX; }
+	// The position of the right thumbstick in Y-axis. Value is between range -1.0 and 1.0.
+	double GetRightThumbstickY() { return mNewReading.RightThumbstickY; }
+	// The position of the left trigger. Value is between 0.0 (not-pressed) and 1.0 (fully pressed).
+	double GetLeftTrigger()	{ return mNewReading.LeftTrigger; }
+	// The position of the right trigger. Value is between 0.0 (not-pressed) and 1.0 (fully pressed).
+	double GetRightTrigger() { return mNewReading.RightTrigger; }
+private:
+	Gamepad^		mGamepad;
+	GamepadReading	mOldReading;
+	GamepadReading	mNewReading;
+};
+
 ref class App sealed : public IFrameworkView, IFrameworkViewSource
 {
 public:
 	void OnGamepadAdded(Object^ o, Gamepad^ gamepad) {
-		critical_section::scoped_lock lock{ mGamepadsLock };
-		if (std::find(begin(mGamepads), end(mGamepads), gamepad) == end(mGamepads)) {
+		critical_section::scoped_lock lock{ mControllersLock };
+		auto it = std::find_if(begin(mControllers), end(mControllers), [gamepad](Controller^ c) {
+			return gamepad == c->GetGamepad();
+		});
+		if (it == end(mControllers)) {
 			gamepad->UserChanged += ref new TypedEventHandler<IGameController^, UserChangedEventArgs^>(this, &App::OnUserChanged);
-			mGamepads->Append(gamepad);
+			auto controller = ref new Controller(gamepad);
+			mControllers->Append(controller);
 			auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
 			ShowToast("Gamepad added", (String^)create_task(action).get());
 		}
 	}
 
 	void OnGamepadRemoved(Object^ o, Gamepad^ gamepad) {
-		critical_section::scoped_lock lock{ mGamepadsLock};
-		auto index = 0u;
-		if (mGamepads->IndexOf(gamepad, &index)) {
-			mGamepads->RemoveAt(index);
-			auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
-			ShowToast("Gamepad removed", (String^)create_task(action).get());
+		critical_section::scoped_lock lock{ mControllersLock };
+		for (auto i = 0u; i < mControllers->Size; i++) {
+			if (gamepad == mControllers->GetAt(i)->GetGamepad()) {
+				mControllers->RemoveAt(i);
+				auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
+				ShowToast("Gamepad removed", (String^)create_task(action).get());
+				break;
+			}
 		}
 	}
 
@@ -50,12 +127,11 @@ public:
 	}
 
 	virtual void Initialize(CoreApplicationView^ applicationView) {
-		WeakReference wr(this);
-
 		// initialize the support to show toast messages.
 		mToastNotifier = ToastNotificationManager::CreateToastNotifier();
-		mGamepads = ref new Vector<Gamepad^>();
 
+		// initialize the support to handle controllers.
+		mControllers = ref new Vector<Controller^>();
 		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>(this, &App::OnGamepadAdded);
 		Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>(this, &App::OnGamepadRemoved);
 	}
@@ -72,103 +148,61 @@ public:
 		auto window = CoreWindow::GetForCurrentThread();
 		window->Activate();
 		while (!mWindowClosed) {
-			for (auto gamepad: mGamepads) {
-				auto reading = gamepad->GetCurrentReading();
+			for (auto controller : mControllers) {
+				controller->Tick();
 
-				// read thumbstick values which vary between [-1.0, 1.0].
-				// note that center position (0.0) may require small "deadzone" to be correctly detected.
-				// see https://docs.microsoft.com/en-us/windows/uwp/gaming/gamepad-and-vibration
-				auto leftStickX = reading.LeftThumbstickX;
-				auto leftStickY = reading.LeftThumbstickY;
-				auto rightStickX = reading.RightThumbstickX;
-				auto rightStickY = reading.RightThumbstickY;
-
-				// read trigger values which vary between [0.0, 1.0].
-				auto leftTrigger = reading.LeftTrigger;
-				auto rightTrigger = reading.RightTrigger;
-
-				// controller button states are stored as a bitset so we use bit operations.
-				if (GamepadButtons::A == (reading.Buttons & GamepadButtons::A)) {
-					if (GamepadButtons::None == (reading.Buttons & GamepadButtons::X)) {
-						OutputDebugString(L"Button A Pressed!\r\n");
-					} else {
-						OutputDebugString(L"Button A and X Pressed!\r\n");
-					}
+				// make some simple checks whether buttons were just pressed.
+				if (controller->ButtonPressed(GamepadButtons::A | GamepadButtons::X)) {
+					Debug(L"Button A and X were just pressed!");
+				} else if (controller->ButtonPressed(GamepadButtons::A)) {
+					Debug(L"Button A was Pressed!");
 				}
 
-				// show stick values when y button is being pressed.
-				if (GamepadButtons::Y == (reading.Buttons & GamepadButtons::Y)) {
-					wchar_t buffer[256];
-					swprintf_s(buffer, 256, L"leftStick: %0.2f -- %0.2f\r\nrightStick: %0.2f -- %0.2f\r\ntriggers: %0.2f -- %0.2f\r\n",
-						leftStickX, leftStickY,
-						rightStickX, rightStickY,
-						leftTrigger, rightTrigger);
-					OutputDebugString(buffer);
+				// show stick values when the Y-button is pressed.
+				if (controller->ButtonPressed(GamepadButtons::Y)) {
+					Debug(L"leftStick: %0.2f -- %0.2f\r\nrightStick: %0.2f -- %0.2f\r\ntriggers: %0.2f -- %0.2f\r\n",
+						controller->GetLeftThumbstickX(), controller->GetLeftThumbstickY(),
+						controller->GetRightThumbstickX(), controller->GetRightThumbstickY(),
+						controller->GetLeftTrigger(), controller->GetRightTrigger());
 				}
 
-				// toggle vibrations based on the directional buttons (DPad) being pressed.
-				// Note that XBox One Controller has four vibration motors.
-				//   1. Left Motor (strong vibration at lower frequency).
-				//   2. Right Motor (gentler vibration at higher frequency).
-				//   3. Left Impulse Trigger
-				//   4. Right Impultse Trigger
-				if (GamepadButtons::DPadDown == (reading.Buttons & GamepadButtons::DPadDown)) {
-					GamepadVibration vibration = gamepad->Vibration;
+				// use direction arrow buttons to adjust vibration motor power.
+				if (controller->ButtonPressed(GamepadButtons::DPadDown)) {
+					auto vibration = controller->GetVibration();
 					vibration.LeftMotor = max(0.0, vibration.LeftMotor - 0.1);
-					gamepad->Vibration = vibration;
-					wchar_t buffer[128];
-					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
-						vibration.LeftMotor, vibration.RightMotor,
-						vibration.LeftTrigger, vibration.RightTrigger);
-					OutputDebugString(buffer);
-				} else if (GamepadButtons::DPadLeft== (reading.Buttons & GamepadButtons::DPadLeft)) {
-					GamepadVibration vibration = gamepad->Vibration;
+					controller->SetVibration(vibration);
+				}
+				if (controller->ButtonPressed(GamepadButtons::DPadLeft)) {
+					auto vibration = controller->GetVibration();
 					vibration.RightMotor = max(0.0, vibration.RightMotor - 0.1);
-					gamepad->Vibration = vibration;
-					wchar_t buffer[128];
-					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
-						vibration.LeftMotor, vibration.RightMotor,
-						vibration.LeftTrigger, vibration.RightTrigger);
-					OutputDebugString(buffer);
-				} else if (GamepadButtons::DPadUp == (reading.Buttons & GamepadButtons::DPadUp)) {
-					GamepadVibration vibration = gamepad->Vibration;
-					vibration.LeftMotor = min(0.75, vibration.LeftMotor + 0.1);
-					gamepad->Vibration = vibration;
-					wchar_t buffer[128];
-					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
-						vibration.LeftMotor, vibration.RightMotor,
-						vibration.LeftTrigger, vibration.RightTrigger);
-					OutputDebugString(buffer);
-				} else if (GamepadButtons::DPadRight == (reading.Buttons & GamepadButtons::DPadRight)) {
-					GamepadVibration vibration = gamepad->Vibration;
-					vibration.RightMotor = min(0.75, vibration.RightMotor + 0.1);
-					gamepad->Vibration = vibration;
-					wchar_t buffer[128];
-					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
-						vibration.LeftMotor, vibration.RightMotor,
-						vibration.LeftTrigger, vibration.RightTrigger);
-					OutputDebugString(buffer);
-				} else if (GamepadButtons::LeftShoulder == (reading.Buttons & GamepadButtons::LeftShoulder)) {
-					GamepadVibration vibration = gamepad->Vibration;
-					vibration.LeftTrigger = min(0.75, vibration.LeftTrigger+ 0.1);
-					gamepad->Vibration = vibration;
-					wchar_t buffer[128];
-					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
-						vibration.LeftMotor, vibration.RightMotor,
-						vibration.LeftTrigger, vibration.RightTrigger);
-					OutputDebugString(buffer);
-				} else if (GamepadButtons::RightShoulder == (reading.Buttons & GamepadButtons::RightShoulder)) {
-					GamepadVibration vibration = gamepad->Vibration;
-					vibration.RightTrigger = min(0.75, vibration.RightTrigger + 0.1);
-					gamepad->Vibration = vibration;
-					wchar_t buffer[128];
-					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
-						vibration.LeftMotor, vibration.RightMotor,
-						vibration.LeftTrigger, vibration.RightTrigger);
-					OutputDebugString(buffer);
-				} else if (GamepadButtons::B == (reading.Buttons & GamepadButtons::B)) {
-					GamepadVibration vibration;
-					gamepad->Vibration = vibration;
+					controller->SetVibration(vibration);
+				}
+				if (controller->ButtonPressed(GamepadButtons::DPadUp)) {
+					auto vibration = controller->GetVibration();
+					vibration.LeftMotor = min(1.0, vibration.LeftMotor + 0.1);
+					controller->SetVibration(vibration);
+				}
+				if (controller->ButtonPressed(GamepadButtons::DPadRight)) {
+					auto vibration = controller->GetVibration();
+					vibration.RightMotor = min(1.0, vibration.RightMotor + 0.1);
+					controller->SetVibration(vibration);
+				}
+
+				// use should buttons to increase vibration on the triggers.
+				if (controller->ButtonPressed(GamepadButtons::LeftShoulder)) {
+					auto vibration = controller->GetVibration();
+					vibration.LeftTrigger = min(1.0, vibration.LeftTrigger + 0.1);
+					controller->SetVibration(vibration);
+				}
+				if (controller->ButtonPressed(GamepadButtons::RightShoulder)) {
+					auto vibration = controller->GetVibration();
+					vibration.RightTrigger = min(1.0, vibration.RightTrigger + 0.1);
+					controller->SetVibration(vibration);
+				}
+
+				// stop all vibration when the X-button is pressed.
+				if (controller->ButtonPressed(GamepadButtons::X)) {
+					controller->SetVibration(GamepadVibration());
 				}
 			}
 			window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
@@ -195,10 +229,10 @@ public:
 		mToastNotifier->Show(toast);
 	}
 private:
-	ToastNotifier^	  mToastNotifier;
-	critical_section  mGamepadsLock;
-	Vector<Gamepad^>^ mGamepads;
-	bool			  mWindowClosed;
+	ToastNotifier^		 mToastNotifier;
+	bool				 mWindowClosed;
+	critical_section	 mControllersLock;
+	Vector<Controller^>^ mControllers;
 };
 
 [MTAThread]
