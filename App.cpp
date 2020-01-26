@@ -17,6 +17,11 @@ using namespace Windows::System;
 
 using namespace concurrency;
 
+// The minimum value for vibration motor power.
+constexpr auto MIN_MOTOR_VALUE = 0.0;
+// The maximum value for vibration motor power.
+constexpr auto MAX_MOTOR_VALUE = 1.0;
+
 // a utility to output debug stuff into Visual Studio console.
 inline void Debug(const wchar_t* fmt, ...) {
 	wchar_t buffer[256];
@@ -169,34 +174,34 @@ public:
 				// use direction arrow buttons to adjust vibration motor power.
 				if (controller->ButtonPressed(GamepadButtons::DPadDown)) {
 					auto vibration = controller->GetVibration();
-					vibration.LeftMotor = max(0.0, vibration.LeftMotor - 0.1);
+					vibration.LeftMotor = max(MIN_MOTOR_VALUE, vibration.LeftMotor - 0.1);
 					controller->SetVibration(vibration);
 				}
 				if (controller->ButtonPressed(GamepadButtons::DPadLeft)) {
 					auto vibration = controller->GetVibration();
-					vibration.RightMotor = max(0.0, vibration.RightMotor - 0.1);
+					vibration.RightMotor = max(MIN_MOTOR_VALUE, vibration.RightMotor - 0.1);
 					controller->SetVibration(vibration);
 				}
 				if (controller->ButtonPressed(GamepadButtons::DPadUp)) {
 					auto vibration = controller->GetVibration();
-					vibration.LeftMotor = min(1.0, vibration.LeftMotor + 0.1);
+					vibration.LeftMotor = min(MAX_MOTOR_VALUE, vibration.LeftMotor + 0.1);
 					controller->SetVibration(vibration);
 				}
 				if (controller->ButtonPressed(GamepadButtons::DPadRight)) {
 					auto vibration = controller->GetVibration();
-					vibration.RightMotor = min(1.0, vibration.RightMotor + 0.1);
+					vibration.RightMotor = min(MAX_MOTOR_VALUE, vibration.RightMotor + 0.1);
 					controller->SetVibration(vibration);
 				}
 
 				// use should buttons to increase vibration on the triggers.
 				if (controller->ButtonPressed(GamepadButtons::LeftShoulder)) {
 					auto vibration = controller->GetVibration();
-					vibration.LeftTrigger = min(1.0, vibration.LeftTrigger + 0.1);
+					vibration.LeftTrigger = min(MAX_MOTOR_VALUE, vibration.LeftTrigger + 0.1);
 					controller->SetVibration(vibration);
 				}
 				if (controller->ButtonPressed(GamepadButtons::RightShoulder)) {
 					auto vibration = controller->GetVibration();
-					vibration.RightTrigger = min(1.0, vibration.RightTrigger + 0.1);
+					vibration.RightTrigger = min(MAX_MOTOR_VALUE, vibration.RightTrigger + 0.1);
 					controller->SetVibration(vibration);
 				}
 
