@@ -2,23 +2,29 @@
 A test about how xbox-controllers can be used in a UWP application.
 
 ## Features
+Here's a small list of the controller API features.
 
-- A support to manage and track headsets attached to controllers.
-  - Gamepad.Headset
-  - Gamepad.HeadsetConnected
-  - Gamepad.HeadsetDisconnected
-- 
+- Enumerate and list all currently attached controllers (Gamepad::Gamepads).
+- Listen events about gamepads getting added (Gamepad::GamepadAdded).
+- Listen events about gamepads getting removed (Gamepad::GamepadRemoved).
+- Listen events about gamepad user being changed (Gamepad::UserChanged).
+- Listen events about gamepad headset being connected (Gamepad::HeadsetConnected).
+- Listen events about gamepad headset being disconnected (Gamepad::HeadsetDisconnected).
+- Get information about the connected headset (Gamepad::Headset).
+  - Contains XAudio endpoint ID for audio capture device.
+  - Contains XAudio endpoint ID for audia render device.
+  - Ability to query info about the headset's current battery state.
+- Check whether the gamepad has wireless connection (Gamepad::IsWireless)
+- Get information about the attached user profile (Gamepad::User).
+- Check the state of the controller buttons and stick readings (Gamepad::GetCurrentReading).
+- Check the controller's current batter level.
+- Control the controller's vibration.
 
 ## Notes
 
 - At application startup Gamepad::Gamepads collection is empty (OS will call Gamepad::GamepadAdded after startup).
-- Add a listener for Gamepad::GamepadAdded to track gamepad additions.
-- Add a listener for Gamepad::GamepadRemoved to track gamepad removals.
-- Direct access to controller headset with Gamepad.Headset.
-  - Contains XAudio endpoint ID for audio capture device.
-  - Contains XAudio endpoint ID for audia render device.
-  - Ability to query info about the headset's current battery state.
-- Add a listener to Gamepad.HeadsetConnected to track headset attachment.
-- Add a listener to Gamepad.HeadsetDisconnected to track headset detachment.
-- Ability to check whether the gamepad has wireless connection.
-- 
+- Xbox One controllers have four different vibration motors.
+  - Left Motor (strong vibration at lower frequency).
+  - Right Motor (gentler vibration at higher frequency).
+  - Left impulse trigger.
+  - Right impulse trigger.
