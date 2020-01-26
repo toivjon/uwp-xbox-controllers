@@ -28,3 +28,5 @@ Here's a small list of the controller API features.
   - Right Motor (gentler vibration at higher frequency).
   - Left impulse trigger.
   - Right impulse trigger.
+- Center position thumbstick (0.0) may require small "deadzone" to be correctly detected.
+  - https://docs.microsoft.com/en-us/windows/uwp/gaming/gamepad-and-vibration

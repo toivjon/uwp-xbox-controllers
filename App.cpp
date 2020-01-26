@@ -32,13 +32,6 @@ inline void Debug(const wchar_t* fmt, ...) {
 	OutputDebugString(buffer);
 }
 
-// note that center position thumbstick (0.0) may require small "deadzone" to be correctly detected.
-// see https://docs.microsoft.com/en-us/windows/uwp/gaming/gamepad-and-vibration
-// Note that XBox One Controller has four vibration motors.
-//   1. Left Motor (strong vibration at lower frequency).
-//   2. Right Motor (gentler vibration at higher frequency).
-//   3. Left Impulse Trigger
-//   4. Right Impultse Trigger
 ref struct Controller sealed
 {
 public:
