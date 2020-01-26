@@ -2,6 +2,7 @@
 #include <ppltasks.h>
 #include <collection.h>
 #include <concrt.h>
+#include <string>
 
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Gaming::Input;
@@ -89,11 +90,19 @@ public:
 				// controller button states are stored as a bitset so we use bit operations.
 				if (GamepadButtons::A == (reading.Buttons & GamepadButtons::A)) {
 					if (GamepadButtons::None == (reading.Buttons & GamepadButtons::X)) {
-						ShowToast("Button Pressed", "A");
+						OutputDebugString(L"Button A Pressed!\r\n");
 					} else {
-						ShowToast("Buttons Pressed", "A + X");
+						OutputDebugString(L"Button A and X Pressed!\r\n");
 					}
-
+				}
+				// show stick values when y button is being pressed.
+				if (GamepadButtons::Y == (reading.Buttons & GamepadButtons::Y)) {
+					wchar_t buffer[256];
+					swprintf_s(buffer, 256, L"leftStick: %0.2f -- %0.2f\r\nrightStick: %0.2f -- %0.2f\r\ntriggers: %0.2f -- %0.2f\r\n",
+						leftStickX, leftStickY,
+						rightStickX, rightStickY,
+						leftTrigger, rightTrigger);
+					OutputDebugString(buffer);
 				}
 			}
 			window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
