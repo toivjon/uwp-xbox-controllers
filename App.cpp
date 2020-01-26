@@ -95,6 +95,7 @@ public:
 						OutputDebugString(L"Button A and X Pressed!\r\n");
 					}
 				}
+
 				// show stick values when y button is being pressed.
 				if (GamepadButtons::Y == (reading.Buttons & GamepadButtons::Y)) {
 					wchar_t buffer[256];
@@ -103,6 +104,71 @@ public:
 						rightStickX, rightStickY,
 						leftTrigger, rightTrigger);
 					OutputDebugString(buffer);
+				}
+
+				// toggle vibrations based on the directional buttons (DPad) being pressed.
+				// Note that XBox One Controller has four vibration motors.
+				//   1. Left Motor (strong vibration at lower frequency).
+				//   2. Right Motor (gentler vibration at higher frequency).
+				//   3. Left Impulse Trigger
+				//   4. Right Impultse Trigger
+				if (GamepadButtons::DPadDown == (reading.Buttons & GamepadButtons::DPadDown)) {
+					GamepadVibration vibration = gamepad->Vibration;
+					vibration.LeftMotor = max(0.0, vibration.LeftMotor - 0.1);
+					gamepad->Vibration = vibration;
+					wchar_t buffer[128];
+					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
+						vibration.LeftMotor, vibration.RightMotor,
+						vibration.LeftTrigger, vibration.RightTrigger);
+					OutputDebugString(buffer);
+				} else if (GamepadButtons::DPadLeft== (reading.Buttons & GamepadButtons::DPadLeft)) {
+					GamepadVibration vibration = gamepad->Vibration;
+					vibration.RightMotor = max(0.0, vibration.RightMotor - 0.1);
+					gamepad->Vibration = vibration;
+					wchar_t buffer[128];
+					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
+						vibration.LeftMotor, vibration.RightMotor,
+						vibration.LeftTrigger, vibration.RightTrigger);
+					OutputDebugString(buffer);
+				} else if (GamepadButtons::DPadUp == (reading.Buttons & GamepadButtons::DPadUp)) {
+					GamepadVibration vibration = gamepad->Vibration;
+					vibration.LeftMotor = min(0.75, vibration.LeftMotor + 0.1);
+					gamepad->Vibration = vibration;
+					wchar_t buffer[128];
+					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
+						vibration.LeftMotor, vibration.RightMotor,
+						vibration.LeftTrigger, vibration.RightTrigger);
+					OutputDebugString(buffer);
+				} else if (GamepadButtons::DPadRight == (reading.Buttons & GamepadButtons::DPadRight)) {
+					GamepadVibration vibration = gamepad->Vibration;
+					vibration.RightMotor = min(0.75, vibration.RightMotor + 0.1);
+					gamepad->Vibration = vibration;
+					wchar_t buffer[128];
+					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
+						vibration.LeftMotor, vibration.RightMotor,
+						vibration.LeftTrigger, vibration.RightTrigger);
+					OutputDebugString(buffer);
+				} else if (GamepadButtons::LeftShoulder == (reading.Buttons & GamepadButtons::LeftShoulder)) {
+					GamepadVibration vibration = gamepad->Vibration;
+					vibration.LeftTrigger = min(0.75, vibration.LeftTrigger+ 0.1);
+					gamepad->Vibration = vibration;
+					wchar_t buffer[128];
+					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
+						vibration.LeftMotor, vibration.RightMotor,
+						vibration.LeftTrigger, vibration.RightTrigger);
+					OutputDebugString(buffer);
+				} else if (GamepadButtons::RightShoulder == (reading.Buttons & GamepadButtons::RightShoulder)) {
+					GamepadVibration vibration = gamepad->Vibration;
+					vibration.RightTrigger = min(0.75, vibration.RightTrigger + 0.1);
+					gamepad->Vibration = vibration;
+					wchar_t buffer[128];
+					swprintf_s(buffer, 128, L"vibration: lMotor: %.1f rMotor: %.1f, lTrigger: %.1f rTrigger: %.1f\r\n",
+						vibration.LeftMotor, vibration.RightMotor,
+						vibration.LeftTrigger, vibration.RightTrigger);
+					OutputDebugString(buffer);
+				} else if (GamepadButtons::B == (reading.Buttons & GamepadButtons::B)) {
+					GamepadVibration vibration;
+					gamepad->Vibration = vibration;
 				}
 			}
 			window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
