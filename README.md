@@ -1,6 +1,8 @@
 # uwp-xbox-controllers
 A test about how xbox-controllers can be used in a UWP application.
 
+![alt text](https://github.com/toivjon/uwp-xbox-controllers/blob/master/Images/xbox-controller.svg "Xbox One Controller")
+
 ## Features
 Here's a small list of the controller API features.
 
