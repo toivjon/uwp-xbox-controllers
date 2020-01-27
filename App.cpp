@@ -8,6 +8,7 @@ using namespace concurrency;
 using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::ApplicationModel::Core;
+using namespace Windows::Devices::Power;
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
 using namespace Windows::System;
@@ -63,6 +64,11 @@ public:
 	GamepadVibration GetVibration() { return mGamepad->Vibration; }
 	// Set the new state for the controller vibration motors.
 	void SetVibration(GamepadVibration vibration) { mGamepad->Vibration = vibration; }
+
+	// Check whether the gamepad is in wireless state.
+	bool IsWireless() { return mGamepad->IsWireless; }
+	// Get the report about the controllers battery state.
+	BatteryReport^ GetPower() { return mGamepad->TryGetBatteryReport(); }
 
 	// The position of the left thumbstick in X-axis. Value is between range -1.0 and 1.0.
 	double GetLeftThumbstickX() { return mNewReading.LeftThumbstickX; }
