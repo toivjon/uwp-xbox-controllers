@@ -9,6 +9,7 @@ Xbox One controller contains following kind of buttons and sticks.
 Inputs are read as simple buttons or/and as float sticks seen from the following list.
 
 | Input            | Type              | Description                                   |
+| ---------------- | ----------------- | --------------------------------------------- |
 | Left Trigger     | Stick [0.0, 1.0]  | Input based on the pressure given to button.  |
 | Right Trigger	   | Stick [0.0, 1.0]  | Input based on the pressure given to button.  |
 | X                | Button            | Simple pressed / not pressed toggle button.   |
