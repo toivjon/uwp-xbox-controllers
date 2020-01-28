@@ -34,19 +34,19 @@ As seen from the table, both thumbsticks can be also pressed which allows them t
 ## Features
 Here's a small list of the controller API features.
 
-- Support for enumerating all currently attached controllers.
-- Support for listening events about gamepads being added or removed.
-- Support for listening events about gamepad user changes.
-- Support for listening events about headset being connected or disconnected.
-- Support for getting information about the current user profile.
-- Support for getting information about the current input readings.
-- Support for getting information about the gamepad battery state.
-- Support for getting information about the connected headset.
+- Enumerate all currently attached controllers.
+- Listen events about gamepads being added or removed.
+- Listen events about gamepad user changes.
+- Listen events about headset being connected or disconnected.
+- Get information about the current user profile.
+- Get information about the current input readings.
+- Get information about the gamepad battery state.
+- Get information about the connected headset.
   - XAudio endpoint ID for audio capture device.
   - XAudio endpoint ID for audio render device.
   - Headset battery state.
-- Support for checking whether the gamepad has a wireless connection.
-- Support to control vibration.
+- Check whether the gamepad has a wireless connection.
+- Control vibration.
 
 ## Notes
 
