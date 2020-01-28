@@ -32,7 +32,7 @@ Inputs are read as press buttons, pressure detectors or both as seen from the fo
 As seen from the table, both thumbsticks can be also pressed which allows them to be as buttons as well.
 
 ## Features
-Here's a small list of the controller API features.
+Here is a small list of the features that are offered by the UWP Gamepad API.
 
 - Enumerate all currently attached controllers.
 - Listen events about gamepads being added or removed.
