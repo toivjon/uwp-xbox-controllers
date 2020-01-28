@@ -2,7 +2,7 @@
 A simple tryout about how Xbox One controllers can be used in a Universal Windows Platform (UWP) application.
 
 ## Controller Readings
-Xbox One controller contains following kind of buttons and sticks which can be read with the UWP Gamepad API.
+Controller contains following kind of buttons and sticks which can be read with the UWP Gamepad API.
 
 ![alt text](https://github.com/toivjon/uwp-xbox-controllers/blob/master/Images/xbox-controller.svg "Xbox One Controller")
 
@@ -10,8 +10,8 @@ Inputs are read as press buttons, pressure detectors or both as seen from the fo
 
 | Input            | Type              | Description                                   |
 | ---------------- | ----------------- | --------------------------------------------- |
-| Left Trigger     | Stick [0.0, 1.0]  | Value is the pressure given to button ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
-| Right Trigger	   | Stick [0.0, 1.0]  | Input based on the pressure given to button.  |
+| Left Trigger     | Stick [0.0, 1.0]  | Value is the given pressure ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
+| Right Trigger	   | Stick [0.0, 1.0]  | Value is the given pressure ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
 | X                | Button            | Simple pressed / not pressed toggle button.   |
 | Y                | Button            | Simple pressed / not pressed toggle button.   |
 | A                | Button            | Simple pressed / not pressed toggle button.   |
