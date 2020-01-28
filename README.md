@@ -1,9 +1,32 @@
 # uwp-xbox-controllers
-A test about how xbox-controllers can be used in a UWP application.
+A simple tryout about how Xbox One controllers can be used in a UWP application.
+
+## Controller
+Xbox One controller contains following kind of buttons and sticks.
 
 ![alt text](https://github.com/toivjon/uwp-xbox-controllers/blob/master/Images/xbox-controller.svg "Xbox One Controller")
 
-Test text...
+Inputs are read as simple buttons or/and as float sticks seen from the following list.
+
+| Input            | Type              | Description                                   |
+| Left Trigger     | Stick [0.0, 1.0]  | Input based on the pressure given to button.  |
+| Right Trigger	   | Stick [0.0, 1.0]  | Input based on the pressure given to button.  |
+| X                | Button            | Simple pressed / not pressed toggle button.   |
+| Y                | Button            | Simple pressed / not pressed toggle button.   |
+| A                | Button            | Simple pressed / not pressed toggle button.   |
+| X                | Button            | Simple pressed / not pressed toggle button.   |
+| Menu             | Button            | Simple pressed / not pressed toggle button.   |
+| View             | Button            | Simple pressed / not pressed toggle button.   |
+| Left Shoulder    | Button            | Simple pressed / not pressed toggle button.   |
+| Right Shoulder   | Button            | Simple pressed / not pressed toggle button.   |
+| D-Pad Up		   | Button            | Simple pressed / not pressed toggle button.   |
+| D-Pad Down       | Button            | Simple pressed / not pressed toggle button.   |
+| D-Pad Left	   | Button            | Simple pressed / not pressed toggle button.   |
+| D-Pad Right	   | Button            | Simple pressed / not pressed toggle button.   |
+| Left Thumbstick  | Button            | Thumbstick can be used as a button and stick. |
+| Left Thumbstick  | Stick [-1.0, 1.0] | Thumbstick can be used as a button and stick. |
+| Right Thumbstick | Button            | Thumbstick can be used as a button and stick. |
+| Right Thumbstick | Stick [-1.0, 1.0] | Thumbstick can be used as a button and stick. |
 
 ## Features
 Here's a small list of the controller API features.
