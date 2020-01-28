@@ -10,24 +10,24 @@ Inputs are read as press buttons, pressure detectors or both as seen from the fo
 
 | Input            | Type              | Description                                   |
 | ---------------- | ----------------- | --------------------------------------------- |
-| Left Trigger     | Stick [0.0, 1.0]  | Value is the given pressure ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
-| Right Trigger	   | Stick [0.0, 1.0]  | Value is the given pressure ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
-| X                | Button            | Simple pressed / not pressed toggle button.   |
-| Y                | Button            | Simple pressed / not pressed toggle button.   |
-| A                | Button            | Simple pressed / not pressed toggle button.   |
-| X                | Button            | Simple pressed / not pressed toggle button.   |
-| Menu             | Button            | Simple pressed / not pressed toggle button.   |
-| View             | Button            | Simple pressed / not pressed toggle button.   |
-| Left Shoulder    | Button            | Simple pressed / not pressed toggle button.   |
-| Right Shoulder   | Button            | Simple pressed / not pressed toggle button.   |
-| D-Pad Up		   | Button            | Simple pressed / not pressed toggle button.   |
-| D-Pad Down       | Button            | Simple pressed / not pressed toggle button.   |
-| D-Pad Left	   | Button            | Simple pressed / not pressed toggle button.   |
-| D-Pad Right	   | Button            | Simple pressed / not pressed toggle button.   |
+| Left Trigger     | Float [0.0, 1.0]  | Value is the given pressure ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
+| Right Trigger	   | Float [0.0, 1.0]  | Value is the given pressure ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
+| X                | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| Y                | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| A                | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| X                | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| Menu             | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| View             | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| Left Shoulder    | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| Right Shoulder   | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| D-Pad Up		   | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| D-Pad Down       | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| D-Pad Left	   | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
+| D-Pad Right	   | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
 | Left Thumbstick  | Button            | Thumbstick can be used as a button and stick. |
-| Left Thumbstick  | Stick [-1.0, 1.0] | Thumbstick can be used as a button and stick. |
+| Left Thumbstick  | Float [-1.0, 1.0] | Thumbstick can be used as a button and stick. |
 | Right Thumbstick | Button            | Thumbstick can be used as a button and stick. |
-| Right Thumbstick | Stick [-1.0, 1.0] | Thumbstick can be used as a button and stick. |
+| Right Thumbstick | Float [-1.0, 1.0] | Thumbstick can be used as a button and stick. |
 
 ## Features
 Here's a small list of the controller API features.
