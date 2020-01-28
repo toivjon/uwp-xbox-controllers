@@ -8,26 +8,28 @@ Controller contains following kind of buttons and sticks which can be read with 
 
 Inputs are read as press buttons, pressure detectors or both as seen from the following list.
 
-| Input            | Type              | Description                                   |
-| ---------------- | ----------------- | --------------------------------------------- |
-| Left Trigger     | Float [0.0, 1.0]  | Value is the given pressure ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
-| Right Trigger	   | Float [0.0, 1.0]  | Value is the given pressure ranging from 0.0 (not pressed) to 1.0 (fully pressed). |
-| X                | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| Y                | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| A                | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| X                | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| Menu             | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| View             | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| Left Shoulder    | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| Right Shoulder   | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| D-Pad Up		   | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| D-Pad Down       | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| D-Pad Left	   | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| D-Pad Right	   | Button            | Value is a simple bit indicating whether the button is pressed or not.             |
-| Left Thumbstick  | Button            | Thumbstick can be used as a button and stick. |
-| Left Thumbstick  | Float [-1.0, 1.0] | Thumbstick can be used as a button and stick. |
-| Right Thumbstick | Button            | Thumbstick can be used as a button and stick. |
-| Right Thumbstick | Float [-1.0, 1.0] | Thumbstick can be used as a button and stick. |
+| Input            | Type     | Value       | Description                                                   |
+| ---------------- | -------- | ----------- | ------------------------------------------------------------- |
+| Left Trigger     | Pressure | [0.0, 1.0]  | Reading varies from 0.0 (not pressed) to 1.0 (fully pressed). |
+| Right Trigger	   | Pressure | [0.0, 1.0]  | Reading varies from 0.0 (not pressed) to 1.0 (fully pressed). |
+| X                | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| Y                | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| A                | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| X                | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| Menu             | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| View             | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| Left Shoulder    | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| Right Shoulder   | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| D-Pad Up		   | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| D-Pad Down       | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| D-Pad Left	   | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| D-Pad Right	   | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| Left Thumbstick  | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| Left Thumbstick  | Pressure | [-1.0, 1.0] | Readings include X-coordinate and Y-coordinates.				|
+| Right Thumbstick | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
+| Right Thumbstick | Pressure | [-1.0, 1.0] | Readings include X-coordinate and Y-coordinates.              |
+
+As seen from the table, both thumbsticks can be also pressed which allows them to be as buttons as well.
 
 ## Features
 Here's a small list of the controller API features.
