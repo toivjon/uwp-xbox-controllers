@@ -91,6 +91,13 @@ private:
 ref class App sealed : public IFrameworkView, IFrameworkViewSource
 {
 public:
+	// ========================================================================
+	// Listener function for a gamepad added events.
+	//
+	// This function is called when a gamepad is being added. Here we store the
+	// reference to added gamepad into our controller collection which allows
+	// us to easily manage and trace our controllers and assign them to actors.
+	// ========================================================================
 	void OnGamepadAdded(Object^ o, Gamepad^ gamepad) {
 		critical_section::scoped_lock lock{ mControllersLock };
 		auto it = std::find_if(begin(mControllers), end(mControllers), [gamepad](Controller^ c) {
@@ -98,13 +105,19 @@ public:
 		});
 		if (it == end(mControllers)) {
 			gamepad->UserChanged += ref new TypedEventHandler<IGameController^, UserChangedEventArgs^>(this, &App::OnUserChanged);
-			auto controller = ref new Controller(gamepad);
-			mControllers->Append(controller);
+			mControllers->Append(ref new Controller(gamepad));
 			auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
 			Debug(L"Gamepad added: %s\r\n", (String^)create_task(action).get());
 		}
 	}
 
+	// ========================================================================
+	// Listener function for a gamepad removed events.
+	//
+	// This function is called when a gamepad is being removed. Here we remove
+	// the gamepad reference from our controller collection so we don't want to
+	// trace or manage it anymore within our application.
+	// ========================================================================
 	void OnGamepadRemoved(Object^ o, Gamepad^ gamepad) {
 		critical_section::scoped_lock lock{ mControllersLock };
 		for (auto i = 0u; i < mControllers->Size; i++) {
@@ -117,29 +130,65 @@ public:
 		}
 	}
 
+	// ========================================================================
+	// Listener function for a gamepad user changed events.
+	//
+	// This function is called when a gamepad user is being changed. Here we're
+	// able to perform all kinds of things related to user. For example we can
+	// update the name of the player in the game UI or other UX and UI things.
+	// ========================================================================
 	void OnUserChanged(IGameController^ c, UserChangedEventArgs^ args) {
 		auto action = args->User->GetPropertyAsync(KnownUserProperties::AccountName);
 		Debug(L"User Changed: %s\r\n", (String^)create_task(action).get());
 	}
 
+	// ========================================================================
+	// Listener function for window being closed.
+	//
+	// This function stores the window closed flag so our main loop will exit.
+	// ========================================================================
 	void OnWindowClosed(CoreWindow^ window, CoreWindowEventArgs^ args) {
 		mWindowClosed = true;
 	}
 
+	// ============================================================================
+	// Initializes the application view.
+	//
+	// This function is called when the application is launched by the runtime. We
+	// may perform all kinds of initialization logics here before actual execution.
+	// ============================================================================
 	virtual void Initialize(CoreApplicationView^ applicationView) {
 		mControllers = ref new Vector<Controller^>();
 		Gamepad::GamepadAdded += ref new EventHandler<Gamepad^>(this, &App::OnGamepadAdded);
 		Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>(this, &App::OnGamepadRemoved);
 	}
-		
+
+	// ============================================================================
+	// Assigns the window for the application.
+	//
+	// This function is called after the Initialize function has been called. Here
+	// we have opportunity to set up window and display event handling operations.
+	// ============================================================================
 	virtual void SetWindow(CoreWindow^ window) {
 		window->Closed += ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
 	}
 
+	// ============================================================================
+	// Loads view related resources.
+	//
+	// This function is called by the runtime when the application should load all
+	// initial scene resources or to restore a previously saved application state.
+	// ============================================================================
 	virtual void Load(String^ entryPoint) {
-
+		// ... nothing
 	}
-		
+
+	// ============================================================================
+	// Run the application view.
+	//
+	// This function is called when the application is set to running state. This
+	// function typically contains the main loop for the game application.
+	// ============================================================================
 	virtual void Run() {
 		auto window = CoreWindow::GetForCurrentThread();
 		window->Activate();
@@ -205,10 +254,21 @@ public:
 		}
 	}
 
+	// ============================================================================
+	// Release and dispose reserved resources.
+	//
+	// Note that this function is not always called when application is exited. It 
+	// seems that this function is not commonly used but just kept as a stump.
+	// ============================================================================
 	virtual void Uninitialize() {
-
+		// ... nothing
 	}
 
+	// ============================================================================
+	// A factory function to create a view.
+	//
+	// CoreApplication will use this function to create a view for the application.
+	// ============================================================================
 	virtual IFrameworkView^ CreateView() {
 		return ref new App();
 	}
