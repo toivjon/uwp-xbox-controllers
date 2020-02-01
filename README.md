@@ -1,5 +1,5 @@
 # uwp-xbox-controllers
-A simple tryout about how Xbox One controllers can be used in a Universal Windows Platform (UWP) application.
+A simple test about how Xbox One controllers can be used in a Universal Windows Platform (UWP) application.
 
 ## Controller Readings
 Controller contains following kind of buttons and sticks which can be read with the UWP Gamepad API.
