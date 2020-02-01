@@ -19,14 +19,82 @@ constexpr auto MIN_MOTOR_VALUE = 0.0;
 // The maximum value for vibration motor power.
 constexpr auto MAX_MOTOR_VALUE = 1.0;
 
-// a utility to output debug stuff into Visual Studio console.
-inline void Debug(const wchar_t* fmt, ...) {
-	wchar_t buffer[256];
-	va_list vargs;
-	__crt_va_start(vargs, fmt);
-	swprintf(buffer, 256, fmt, vargs);
-	__crt_va_end(vargs);
-	OutputDebugString(buffer);
+// ============================================================================
+// An utility to create a wide-string presentation of a battery report item.
+// ============================================================================
+inline std::wstring ToString(BatteryReport^ battery) {
+	std::wstring str;
+	str += L"state: ";
+	str += std::to_wstring((int)battery->Status);
+
+	// ... this throws a read access violation if not supported by the controller
+	// str += L"\nchargeRateInMilliwats: ";
+	// str += std::to_wstring(battery->ChargeRateInMilliwatts->Value);
+
+	// ... this throws a read access violation if not supported by the controller
+	// str += L"\nDesignCapacityInMilliwattHours: ";
+	// str += std::to_wstring(battery->DesignCapacityInMilliwattHours->Value);
+	
+	str += L"\nFullChargeCapacityInMilliwattHours: ";
+	str += std::to_wstring(battery->FullChargeCapacityInMilliwattHours->Value);
+	str += L"\nRemainingCapacityInMilliwattHours: ";
+	str += std::to_wstring(battery->RemainingCapacityInMilliwattHours->Value);
+	str += L"\n";
+	return str;
+}
+
+// ============================================================================
+// An utility to create a wide-string presentation of a user item.
+// ============================================================================
+inline std::wstring ToString(User^ user) {
+	std::wstring str;
+	str += L"NonRoamableId: ";
+	str += user->NonRoamableId->Data();
+	str += L"\nAccountName: ";
+	str += ((String^)create_task(user->GetPropertyAsync(KnownUserProperties::AccountName)).get())->Data();
+	str += L"\nDisplayName: ";
+	str += ((String^)create_task(user->GetPropertyAsync(KnownUserProperties::DisplayName)).get())->Data();
+	str += L"\nDomainName: ";
+	str += ((String^)create_task(user->GetPropertyAsync(KnownUserProperties::DomainName)).get())->Data();
+	str += L"\nFirstName: ";
+	str += ((String^)create_task(user->GetPropertyAsync(KnownUserProperties::FirstName)).get())->Data();
+	str += L"\nLastName: ";
+	str += ((String^)create_task(user->GetPropertyAsync(KnownUserProperties::LastName)).get())->Data();
+	str += L"\nGuestHost: ";
+	str += ((String^)create_task(user->GetPropertyAsync(KnownUserProperties::GuestHost)).get())->Data();
+	str += L"\nPrincipalName: ";
+	str += ((String^)create_task(user->GetPropertyAsync(KnownUserProperties::PrincipalName)).get())->Data();
+	str += L"\nSessionInitiationProtocolUri: ";
+	str += ((String^)create_task(user->GetPropertyAsync(KnownUserProperties::SessionInitiationProtocolUri)).get())->Data();
+	str += L"\nUserType: ";
+	switch (user->Type) {
+	case UserType::LocalGuest:
+		str += L"LocalGuest";
+		break;
+	case UserType::LocalUser:
+		str += L"LocalUser";
+		break;
+	case UserType::RemoteGuest:
+		str += L"RemoteGuest";
+		break;
+	case UserType::RemoteUser:
+		str += L"RemoteUser";
+		break;
+	}
+	str += L"\nAuthenticationStatus: ";
+	switch (user->AuthenticationStatus) {
+	case UserAuthenticationStatus::LocallyAuthenticated:
+		str += L"LocallyAuthenticated";
+		break;
+	case UserAuthenticationStatus::RemotelyAuthenticated:
+		str += L"RemotelyAuthenticated";
+		break;
+	case UserAuthenticationStatus::Unauthenticated:
+		str += L"Unauthenticated";
+		break;
+	}
+	str += L"\n";
+	return str;
 }
 
 ref struct Controller sealed
@@ -88,6 +156,7 @@ private:
 	GamepadReading	mNewReading;
 };
 
+
 ref class App sealed : public IFrameworkView, IFrameworkViewSource
 {
 public:
@@ -106,8 +175,13 @@ public:
 		if (it == end(mControllers)) {
 			gamepad->UserChanged += ref new TypedEventHandler<IGameController^, UserChangedEventArgs^>(this, &App::OnUserChanged);
 			mControllers->Append(ref new Controller(gamepad));
-			auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
-			Debug(L"Gamepad added: %s\r\n", (String^)create_task(action).get());
+			OutputDebugString(L"=== Gamepad Added ===\n");
+			OutputDebugString(L"User information:\n");
+			OutputDebugString(::ToString(gamepad->User).c_str());
+			OutputDebugString(L"Wireless: ");
+			OutputDebugString(gamepad->IsWireless ? L"yes" : L"no");
+			OutputDebugString(L"\nBattery information:\n");
+			OutputDebugString(::ToString(gamepad->TryGetBatteryReport()).c_str());
 		}
 	}
 
@@ -123,8 +197,7 @@ public:
 		for (auto i = 0u; i < mControllers->Size; i++) {
 			if (gamepad == mControllers->GetAt(i)->GetGamepad()) {
 				mControllers->RemoveAt(i);
-				auto action = gamepad->User->GetPropertyAsync(KnownUserProperties::AccountName);
-				Debug(L"Gamepad removed: %s\r\n", (String^)create_task(action).get());
+				OutputDebugString(L"=== Gamepad Removed ===\n");
 				break;
 			}
 		}
@@ -138,8 +211,8 @@ public:
 	// update the name of the player in the game UI or other UX and UI things.
 	// ========================================================================
 	void OnUserChanged(IGameController^ c, UserChangedEventArgs^ args) {
-		auto action = args->User->GetPropertyAsync(KnownUserProperties::AccountName);
-		Debug(L"User Changed: %s\r\n", (String^)create_task(action).get());
+		OutputDebugString(L"=== User Changed ===\n");
+		OutputDebugString(::ToString(args->User).c_str());
 	}
 
 	// ========================================================================
@@ -198,17 +271,25 @@ public:
 
 				// make some simple checks whether buttons were just pressed.
 				if (controller->ButtonPressed(GamepadButtons::A | GamepadButtons::X)) {
-					Debug(L"Button A and X were just pressed!");
+					OutputDebugString(L"Button A and X were just pressed!");
 				} else if (controller->ButtonPressed(GamepadButtons::A)) {
-					Debug(L"Button A was Pressed!");
+					OutputDebugString(L"Button A was Pressed!");
 				}
 
 				// show stick values when the Y-button is pressed.
 				if (controller->ButtonPressed(GamepadButtons::Y)) {
-					Debug(L"leftStick: %0.2f -- %0.2f\r\nrightStick: %0.2f -- %0.2f\r\ntriggers: %0.2f -- %0.2f\r\n",
-						controller->GetLeftThumbstickX(), controller->GetLeftThumbstickY(),
-						controller->GetRightThumbstickX(), controller->GetRightThumbstickY(),
-						controller->GetLeftTrigger(), controller->GetRightTrigger());
+					OutputDebugString(L"leftStick-x: ");
+					OutputDebugString(std::to_wstring(controller->GetLeftThumbstickX()).c_str());
+					OutputDebugString(L"\nleftStick-y: ");
+					OutputDebugString(std::to_wstring(controller->GetLeftThumbstickY()).c_str());
+					OutputDebugString(L"\nrightStick-x: ");
+					OutputDebugString(std::to_wstring(controller->GetRightThumbstickX()).c_str());
+					OutputDebugString(L"\nrightStick-y: ");
+					OutputDebugString(std::to_wstring(controller->GetRightThumbstickY()).c_str());
+					OutputDebugString(L"\nrightTrigger: ");
+					OutputDebugString(std::to_wstring(controller->GetRightTrigger()).c_str());
+					OutputDebugString(L"\nleftTrigger: ");
+					OutputDebugString(std::to_wstring(controller->GetLeftTrigger()).c_str());
 				}
 
 				// use direction arrow buttons to adjust vibration motor power.
