@@ -78,7 +78,7 @@ Here is a small list of the features offered by the UWP Gamepad API.
   - Right impulse trigger.
 - Center position thumbstick (0.0) may require small "deadzone" to be correctly detected.
   - https://docs.microsoft.com/en-us/windows/uwp/gaming/gamepad-and-vibration
-- If application supports multiple users, then <uap:SupportedUsers>multiple</uap:SupportedUsers> should be added to manifest.
+- Applications with multi-user support should add <uap:SupportedUsers>multiple</uap:SupportedUsers> to manifest.
   - https://docs.microsoft.com/en-us/windows/uwp/xbox-apps/multi-user-applications
 - Battery charge rate and design capaity cannot be fully queried from all controllers.
   - https://docs.microsoft.com/en-us/windows/uwp/gaming/input-practices-for-games#get-the-state-of-the-battery
