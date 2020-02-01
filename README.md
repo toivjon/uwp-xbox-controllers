@@ -38,9 +38,29 @@ Here is a small list of the features offered by the UWP Gamepad API.
 - Listen events about gamepads being added or removed.
 - Listen events about gamepad user changes.
 - Listen events about headset being connected or disconnected.
-- Get information about the current user profile.
+- Get information about the current user.
+  - The (non-roamable) identifier of the user.
+  - The authentication status of the user (local/remote/unauthenticated).
+  - The type of the user (local-guest/local-user/remote-guest/remote-user).
+  - Following values also require "User Account Information" capability.    
+	- The user's account name.
+	- The user's display name.
+	- The user's domain name.
+	- The user's first name.
+	- The user's last name.
+	- The user's principal name.
+	- The user's provider name.
+	- The user's session initiation protocol URI.
+	- The user's picture.
 - Get information about the current input readings.
+  - 4 pressure detectors.
+  - 14 buttons.
 - Get information about the gamepad battery state.
+  - The rate that the battery is charging (warning: see the Notes section).
+  - The design capacity of the battery (warning: see the Notes section).
+  - The fully charged capacity of the battery.
+  - The remaining capacity of the battery.
+  - The status of the battery (charging/discharging/idle/not-present).
 - Get information about the connected headset.
   - XAudio endpoint ID for audio capture device.
   - XAudio endpoint ID for audio render device.
@@ -58,3 +78,7 @@ Here is a small list of the features offered by the UWP Gamepad API.
   - Right impulse trigger.
 - Center position thumbstick (0.0) may require small "deadzone" to be correctly detected.
   - https://docs.microsoft.com/en-us/windows/uwp/gaming/gamepad-and-vibration
+- If application supports multiple users, then <uap:SupportedUsers>multiple</uap:SupportedUsers> should be added to manifest.
+  - https://docs.microsoft.com/en-us/windows/uwp/xbox-apps/multi-user-applications
+- Battery charge rate and design capaity cannot be fully queried from all controllers.
+  - https://docs.microsoft.com/en-us/windows/uwp/gaming/input-practices-for-games#get-the-state-of-the-battery
