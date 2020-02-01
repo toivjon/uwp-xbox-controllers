@@ -25,9 +25,9 @@ Inputs are read as press buttons, pressure detectors or both as seen from the fo
 | D-Pad Left	   | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
 | D-Pad Right	   | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
 | Left Thumbstick  | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
-| Left Thumbstick  | Pressure | [-1.0, 1.0] | Readings include X-coordinate and Y-coordinates.				|
+| Left Thumbstick  | Pressure | [-1.0, 1.0] | Readings include X- and Y-coordinates.				        |
 | Right Thumbstick | Button   |   0 / 1     | Reading is either 0 (not pressed) or 1 (pressed).             |
-| Right Thumbstick | Pressure | [-1.0, 1.0] | Readings include X-coordinate and Y-coordinates.              |
+| Right Thumbstick | Pressure | [-1.0, 1.0] | Readings include X- and Y-coordinates.                        |
 
 As seen from the table, both thumbsticks can be also pressed which allows them to be as buttons as well.
 
@@ -77,5 +77,5 @@ Here is a small list of the features offered by the UWP Gamepad API.
   - Left impulse trigger.
   - Right impulse trigger.
 - Center position thumbstick (0.0) may require small "deadzone" to be correctly detected.
-- Applications with multi-user support should add <uap:SupportedUsers>multiple</uap:SupportedUsers> to manifest.
+- Applications with multi-user support should add uap:SupportedUsers element with "multiple" into manifest.
 - Battery charge rate and design capacity cannot be fully queried from all controllers.
